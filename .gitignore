@@ -1,0 +1,8 @@
+# Never commit generated WireGuard client/server secrets
+*.conf
+peer_*/
+wg-clients/
+*.key
+.env
+.env.*
+!.env.example

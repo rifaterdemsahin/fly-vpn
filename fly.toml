@@ -1,0 +1,39 @@
+# fly.toml — WireGuard VPN gateway
+#
+# WireGuard speaks UDP, so we expose a raw UDP service (no HTTP/TCP proxy).
+# A dedicated IPv4 is required so the Mac client has a stable endpoint to dial.
+app = "fly-vpn-erdem"
+primary_region = "lhr"   # London — closest to the user
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PUID = "1000"
+  PGID = "1000"
+  TZ = "Europe/London"
+  SERVERPORT = "51820"
+  PEERS = "mac,phone"          # one client config generated per name
+  PEERDNS = "1.1.1.1"          # DNS handed to clients
+  INTERNAL_SUBNET = "10.13.13.0"
+  ALLOWEDIPS = "0.0.0.0/0"     # route ALL client traffic through the tunnel
+  LOG_CONFS = "true"
+  # SERVERURL is injected as a Fly secret after the IPv4 is allocated
+  # (see scripts/deploy.sh) so generated peer configs point at the public IP.
+
+# Raw UDP listener for WireGuard. Fly forwards UDP straight to the VM.
+[[services]]
+  internal_port = 51820
+  protocol = "udp"
+
+  [[services.ports]]
+    port = 51820
+
+# Persist generated server + peer configs across restarts/redeploys.
+[mounts]
+  source = "wg_config"
+  destination = "/config"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
