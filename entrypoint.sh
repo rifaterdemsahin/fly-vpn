@@ -29,8 +29,8 @@ cat > "$SERVER_CONF" <<EOF
 Address = ${PREFIX}.1/24
 ListenPort = ${PORT}
 PrivateKey = ${SERVER_PRIV}
-PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE; iptables -t mangle -D FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 EOF
 
 # --- peers ---
@@ -65,6 +65,7 @@ EOF
 PrivateKey = ${PPRIV}
 Address = ${PIP}/24
 DNS = ${DNS}
+MTU = ${CLIENT_MTU:-1280}
 
 [Peer]
 PublicKey = ${SERVER_PUB}

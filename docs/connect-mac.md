@@ -39,3 +39,7 @@ Save the output as `fly.conf`, import it into the WireGuard app, Activate.
 - **DNS not resolving `*.internal`** — ensure the config has a `DNS = fdaa::3` line.
 - **Tunnel "Active" but no traffic** — restrictive Wi-Fi may block outbound UDP;
   WireGuard needs UDP to pass data.
+- **Ping works / small pages load but HTTPS hangs** — MTU is too high for the
+  path to Fly. Add `MTU = 1280` under `[Interface]` in the client config and
+  reconnect. The server also clamps TCP MSS to PMTU as a safety net.
+  Verify with: `ping -c2 -D -s 1400 10.13.13.1` (fails) vs `-s 1200` (works).
