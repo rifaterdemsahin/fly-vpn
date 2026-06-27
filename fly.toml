@@ -9,22 +9,22 @@ primary_region = "lhr"   # London — closest to the user
   dockerfile = "Dockerfile"
 
 [env]
-  PUID = "1000"
-  PGID = "1000"
-  TZ = "Europe/London"
   SERVERPORT = "51820"
   PEERS = "mac,phone"          # one client config generated per name
   PEERDNS = "1.1.1.1"          # DNS handed to clients
-  INTERNAL_SUBNET = "10.13.13.0"
+  SUBNET_PREFIX = "10.13.13"   # tunnel /24; server is .1, peers from .2
   ALLOWEDIPS = "0.0.0.0/0"     # route ALL client traffic through the tunnel
-  LOG_CONFS = "true"
   # SERVERURL is injected as a Fly secret after the IPv4 is allocated
   # (see scripts/deploy.sh) so generated peer configs point at the public IP.
 
 # Raw UDP listener for WireGuard. Fly forwards UDP straight to the VM.
+# A VPN must stay up, so disable auto-stop and keep one machine running.
 [[services]]
   internal_port = 51820
   protocol = "udp"
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
 
   [[services.ports]]
     port = 51820
