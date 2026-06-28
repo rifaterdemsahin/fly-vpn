@@ -36,7 +36,9 @@ if ! fly ips list -a "$APP" | grep -qw v4; then
 fi
 fly ips allocate-v6 -a "$APP" 2>/dev/null || true
 
-PUBLIC_IP="$(fly ips list -a "$APP" | awk '/v4/{print $2; exit}')"
+# Parse JSON, not the box-drawing table — awk on the table grabs a separator
+# char instead of the address and breaks the peer Endpoint.
+PUBLIC_IP="$(fly ips list -a "$APP" --json | python3 -c "import sys,json; print(next(i['Address'] for i in json.load(sys.stdin) if i.get('Type')=='v4'))")"
 echo "==> Public IPv4: $PUBLIC_IP"
 
 echo "==> Setting SERVERURL secret so peer configs point at the public IP"
