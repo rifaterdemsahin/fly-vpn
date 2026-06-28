@@ -3,7 +3,7 @@
 # WireGuard speaks UDP, so we expose a raw UDP service (no HTTP/TCP proxy).
 # A dedicated IPv4 is required so the Mac client has a stable endpoint to dial.
 app = "fly-vpn-erdem"
-primary_region = "lhr"   # London — closest to the user
+primary_region = "fra"   # Frankfurt, Germany — VPN exit location
 
 [build]
   dockerfile = "Dockerfile"
