@@ -29,8 +29,11 @@ cat > "$SERVER_CONF" <<EOF
 Address = ${PREFIX}.1/24
 ListenPort = ${PORT}
 PrivateKey = ${SERVER_PRIV}
-PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE; iptables -t mangle -D FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+# NOTE: no TCPMSS mangle rule — Fly's Firecracker VMs lack the xt_TCPMSS
+# kernel module, so it fails and makes wg-quick tear the tunnel down. The
+# conservative client MTU (1280) covers path-MTU issues instead.
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 EOF
 
 # --- peers ---
